@@ -130,48 +130,43 @@ function App() {
   };
 
   // --- Industry Presets based on Mexican WhatsApp Specialty Data ---
+  // avgLeadValue now represents estimated value BEFORE conversion
   const industryPresets = {
     clinica_dental: {
         businessHourMessages: 40, afterHourMessages: 15, missedMessageRate: 10,
-        valuePerChatConversion: 2500, conversionRateLift: 42.5,
-        salesCallPercentage: 65, baseConversionRate: 22.5,
-        humanHourlyWage: 97.5, humanOverheadPercentage: 30,
-        automationCoverage: 70
+        avgLeadValue: 7813, // Estimated Lead Value (2500 / 0.3206)
+        conversionRateLift: 42.5, salesCallPercentage: 65, baseConversionRate: 22.5,
+        humanHourlyWage: 97.5, humanOverheadPercentage: 30, automationCoverage: 70
     },
     quiropráctico: {
         businessHourMessages: 30, afterHourMessages: 10, missedMessageRate: 6.5,
-        valuePerChatConversion: 1850, conversionRateLift: 52.5,
-        salesCallPercentage: 45, baseConversionRate: 37.5,
-        humanHourlyWage: 102.5, humanOverheadPercentage: 27.5,
-        automationCoverage: 70
+        avgLeadValue: 3246, // Estimated Lead Value (1850 / 0.5718)
+        conversionRateLift: 52.5, salesCallPercentage: 45, baseConversionRate: 37.5,
+        humanHourlyWage: 102.5, humanOverheadPercentage: 27.5, automationCoverage: 70
     },
     terapia_fisica: {
         businessHourMessages: 57.5, afterHourMessages: 17.5, missedMessageRate: 12.5,
-        valuePerChatConversion: 1350, conversionRateLift: 37.5,
-        salesCallPercentage: 55, baseConversionRate: 47.5,
-        humanHourlyWage: 90, humanOverheadPercentage: 24.5,
-        automationCoverage: 70
+        avgLeadValue: 2077, // Estimated Lead Value (1350 / 0.6506)
+        conversionRateLift: 37.5, salesCallPercentage: 55, baseConversionRate: 47.5,
+        humanHourlyWage: 90, humanOverheadPercentage: 24.5, automationCoverage: 70
     },
      urgencias: {
         businessHourMessages: 100, afterHourMessages: 37.5, missedMessageRate: 4,
-        valuePerChatConversion: 4750, conversionRateLift: 62.5,
-        salesCallPercentage: 85, baseConversionRate: 75,
-        humanHourlyWage: 115, humanOverheadPercentage: 32.5,
-        automationCoverage: 70
+        avgLeadValue: 4750, // Estimated Lead Value (4750 / 1.00) - Conversion capped at 100%
+        conversionRateLift: 62.5, salesCallPercentage: 85, baseConversionRate: 75, // Base 75 * 1.625 > 100%
+        humanHourlyWage: 115, humanOverheadPercentage: 32.5, automationCoverage: 70
     },
     salud_mental: {
         businessHourMessages: 47.5, afterHourMessages: 30, missedMessageRate: 15,
-        valuePerChatConversion: 2250, conversionRateLift: 32.5,
-        salesCallPercentage: 40, baseConversionRate: 30,
-        humanHourlyWage: 107.5, humanOverheadPercentage: 27.5,
-        automationCoverage: 70
+        avgLeadValue: 5625, // Estimated Lead Value (2250 / 0.3975)
+        conversionRateLift: 32.5, salesCallPercentage: 40, baseConversionRate: 30,
+        humanHourlyWage: 107.5, humanOverheadPercentage: 27.5, automationCoverage: 70
     },
-    otro_salud: {
+    otro_salud: { // Fallback using Dental values
         businessHourMessages: 40, afterHourMessages: 15, missedMessageRate: 10,
-        valuePerChatConversion: 2500, conversionRateLift: 42.5,
-        salesCallPercentage: 65, baseConversionRate: 22.5,
-        humanHourlyWage: 97.5, humanOverheadPercentage: 30,
-        automationCoverage: 70
+        avgLeadValue: 7813,
+        conversionRateLift: 42.5, salesCallPercentage: 65, baseConversionRate: 22.5,
+        humanHourlyWage: 97.5, humanOverheadPercentage: 30, automationCoverage: 70
     }
   };
 
@@ -196,10 +191,15 @@ function App() {
   const [automationPercentage, setAutomationPercentage] = useState(defaultPreset.automationCoverage);
   const [salesMessagePercentage, setSalesMessagePercentage] = useState(defaultPreset.salesCallPercentage);
   const [daysOpen, setDaysOpen] = useState("sixdays");
-  const [avgLeadValue, setAvgLeadValue] = useState(defaultPreset.valuePerChatConversion);
+  const [avgLeadValue, setAvgLeadValue] = useState(defaultPreset.avgLeadValue); // Now represents Lead Value
   // Calculate initial conversion rate and ROUND it
-  const initialConversionRate = Math.round(defaultPreset.baseConversionRate * (1 + defaultPreset.conversionRateLift / 100));
-  const [conversionRate, setConversionRate] = useState(initialConversionRate); // Now an integer
+  const calculateConversionRate = (preset) => {
+      const rate = preset.baseConversionRate * (1 + preset.conversionRateLift / 100);
+      // Cap conversion rate at 100% before rounding
+      return Math.round(Math.min(rate, 100));
+  };
+  const initialConversionRate = calculateConversionRate(defaultPreset);
+  const [conversionRate, setConversionRate] = useState(initialConversionRate); // Final conversion rate %
   const [industry, setIndustry] = useState(defaultIndustry);
   const [humanHourlyWage, setHumanHourlyWage] = useState(defaultPreset.humanHourlyWage);
   const [humanHoursPerWeek, setHumanHoursPerWeek] = useState(40);
@@ -228,6 +228,7 @@ function App() {
     paybackPeriod: 0, yearlyCostSavings: 0, yearlyPotentialRevenue: 0,
     yearlyNetBenefit: 0, firstYearNetReturn: 0,
     firstYearRevenueVsAiCost: 0,
+    automationPercentage: defaultPreset.automationCoverage
   });
 
   // --- Effects ---
@@ -244,15 +245,17 @@ function App() {
     }
   }, [selectedTier]);
 
-  // --- Calculation Logic ---
+  // --- Calculation Logic (Uses conversionRate now) ---
   useEffect(() => {
     try {
       // Ensure inputs are valid numbers
       const numBusinessMessages = Number(businessHourMessages) || 0;
       const numAfterHoursMessages = Number(afterHourMessages) || 0;
       const numMissedRate = Number(missedMessageRate) || 0;
+      const numAutomation = Number(automationPercentage) || 0;
       const numSalesPercent = Number(salesMessagePercentage) || 0;
-      const numAvgValue = Number(avgLeadValue) || 0;
+      const numAvgLeadVal = Number(avgLeadValue) || 0; // This is now LEAD value
+      const numConversionRate = Number(conversionRate) || 0; // This is the final conversion %
       const numWage = Number(humanHourlyWage) || 0;
       const numHours = Number(humanHoursPerWeek) || 0;
       const numOverhead = Number(humanOverheadPercentage) || 0;
@@ -273,10 +276,10 @@ function App() {
       const monthlyMissedBusinessHourMessages = totalMonthlyBusinessMessages * (numMissedRate / 100);
       const totalMissedMessages = monthlyMissedBusinessHourMessages + totalMonthlyAfterHourMessages;
 
-      // Calculate potential revenue from missed messages
+      // Calculate potential revenue from missed messages (USING CONVERSION RATE)
       const salesMissedMessages = totalMissedMessages * (numSalesPercent / 100);
-      const valuePerConvertedChat = numAvgValue;
-      const potentialRevenueFromMissedMessages = salesMissedMessages * valuePerConvertedChat;
+      // Revenue = Missed Sales Leads * Value per Lead * Conversion Rate
+      const potentialRevenueFromMissedMessages = salesMissedMessages * numAvgLeadVal * (numConversionRate / 100);
 
       // Calculate WhatsApp AI costs (Simplified)
       const aiPlatformFee = aiMonthlyFee;
@@ -327,13 +330,15 @@ function App() {
         yearlyNetBenefit: yearlyNetBenefit,
         firstYearNetReturn: firstYearNetReturn,
         firstYearRevenueVsAiCost: calculatedFirstYearRevenueVsAiCost,
+        automationPercentage: numAutomation
       });
     } catch (error) {
         console.error("Error during calculation:", error);
     }
   }, [
+    // Dependency array updated
     businessHourMessages, afterHourMessages, missedMessageRate, automationPercentage,
-    salesMessagePercentage, daysOpen, avgLeadValue, conversionRate,
+    salesMessagePercentage, daysOpen, avgLeadValue, conversionRate, // conversionRate now affects calculation
     aiSetupFee, aiMonthlyFee,
     humanHourlyWage, humanHoursPerWeek, humanOverheadPercentage
   ]);
@@ -349,10 +354,9 @@ function App() {
     setMissedMessageRate(preset.missedMessageRate);
     setAutomationPercentage(preset.automationCoverage);
     setSalesMessagePercentage(preset.salesCallPercentage);
-    setAvgLeadValue(preset.valuePerChatConversion);
-    // Recalculate conversion rate based on preset's base and lift, and ROUND it
-    const newConversionRate = Math.round(preset.baseConversionRate * (1 + preset.conversionRateLift / 100));
-    setConversionRate(newConversionRate); // Set rounded integer value
+    setAvgLeadValue(preset.avgLeadValue); // Set estimated LEAD value
+    const newConversionRate = calculateConversionRate(preset); // Use helper to calculate/cap/round
+    setConversionRate(newConversionRate);
     setHumanHourlyWage(preset.humanHourlyWage);
     setHumanOverheadPercentage(preset.humanOverheadPercentage);
 
@@ -531,22 +535,22 @@ function App() {
                         {inputErrors.salesMessagePercentage && (<p className="text-red-500 text-xs mt-1">Ingrese un valor entre 0 y 100.</p>)}
                       </div>
                       <div>
-                        <label htmlFor="avgLeadValue" className="block text-sm font-medium mb-1 text-gray-600">Valor Promedio por Conversión de Chat ($ MXN)</label>
+                        {/* Updated Label and Description */}
+                        <label htmlFor="avgLeadValue" className="block text-sm font-medium mb-1 text-gray-600">Valor Promedio por **Lead** de Chat ($ MXN)</label>
                         <input id="avgLeadValue" type="number" min="0" step="0.01" value={avgLeadValue}
                           onChange={(e) => handleNumberInputChange(setAvgLeadValue, 'avgLeadValue', e.target.value)}
                           className={`w-full p-2 border rounded transition duration-150 ${inputErrors.avgLeadValue ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-gray-500 focus:border-gray-500'}`}
-                          placeholder="ej., 2500" />
-                        <p className="text-xs text-gray-500 mt-1">Valor estimado generado por una conversión iniciada vía chat.</p>
+                          placeholder="ej., 7813" /> {/* Updated Placeholder */}
+                        <p className="text-xs text-gray-500 mt-1">Valor estimado de un prospecto generado vía chat (antes de conversión).</p>
                         {inputErrors.avgLeadValue && (<p className="text-red-500 text-xs mt-1">Ingrese un número positivo.</p>)}
                       </div>
                       <div>
-                        {/* Updated step to 1 for integer input */}
                         <label htmlFor="conversionRate" className="block text-sm font-medium mb-1 text-gray-600">Tasa de Conversión Estimada (Chat a Paciente) (%)</label>
                         <input id="conversionRate" type="number" min="0" max="100" step="1" value={conversionRate}
                           onChange={(e) => handleNumberInputChange(setConversionRate, 'conversionRate', e.target.value, 0, 100)}
                           className={`w-full p-2 border rounded transition duration-150 ${inputErrors.conversionRate ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-gray-500 focus:border-gray-500'}`}
-                           placeholder="ej., 32" /> {/* Updated placeholder */}
-                        <p className="text-xs text-gray-500 mt-1">Tasa de conversión final estimada para leads de chat (Informativo).</p>
+                           placeholder="ej., 32" />
+                        <p className="text-xs text-gray-500 mt-1">Tasa de conversión final estimada para leads de chat.</p>
                         {inputErrors.conversionRate && (<p className="text-red-500 text-xs mt-1">Ingrese un valor entero entre 0 y 100.</p>)}
                       </div>
                       {/* Staff costs */}
@@ -623,11 +627,16 @@ function App() {
                       <span className="text-sm text-gray-700">Oportunidades Perdidas (Nuevos Pacientes Est.):</span>
                        <span className="font-medium text-red-700">{safeLocaleString(results.salesMissedMessages, { maximumFractionDigits: 1 }, '0.0')}</span>
                     </div>
-                    <p className="text-xs text-gray-500 -mt-2 pl-1">(Mensajes Perdidos × % Mensajes Nuevos Pacientes)</p>
+                    <p className="text-xs text-gray-500 -mt-2 mb-2 pl-1">(Mensajes Perdidos × % Mensajes Nuevos Pacientes)</p>
+                     <div className="flex justify-between items-center border-t border-gray-200 pt-3 mt-3">
+                      <span className="text-sm font-semibold text-blue-700">Eficiencia de Automatización (Est.):</span>
+                      <span className="font-semibold text-blue-700">{safeLocaleString(results.automationPercentage / 100, { style: 'percent' })}</span>
+                    </div>
+                    <p className="text-xs text-gray-500 -mt-2 pl-1">(% de mensajes manejados sin intervención humana)</p>
                   </CardContent>
                 </Card>
 
-                {/* Updated AI Cost Card */}
+                {/* AI Cost Card */}
                 <Card className="border border-gray-200 print-shadow-none print-border-none">
                   <CardHeader>
                     <CardTitle className="text-lg font-semibold text-gray-700">Costo Plataforma WhatsApp IA ({pricingTiers[selectedTier]?.name} Nivel - MXN)</CardTitle>
@@ -689,7 +698,8 @@ function App() {
                       <span className="text-sm text-gray-700">Ingresos Adicionales Potenciales (WhatsApp):</span>
                       <span className="font-medium text-green-700"> + ${safeLocaleString(results.potentialRevenue, { style: 'decimal', minimumFractionDigits: 2 })} </span>
                     </div>
-                    <p className="text-xs text-gray-500 -mt-2 mb-2 pl-1">(Por capturar mensajes perdidos de nuevos pacientes)</p>
+                    {/* Updated description for potential revenue */}
+                    <p className="text-xs text-gray-500 -mt-2 mb-2 pl-1">(Oportunidades Perdidas * Valor Lead * Tasa Conversión)</p>
                     <div className="flex justify-between items-center border-t border-gray-300 pt-2 mt-2">
                       <span className="text-sm font-semibold text-gray-800">Beneficio Mensual Total (WhatsApp IA):</span>
                       <span className={`font-semibold text-xl ${results.netBenefit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
