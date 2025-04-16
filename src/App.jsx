@@ -125,81 +125,113 @@ function App() {
     },
     enterprise: {
         name: "Empresarial", setupFee: 120000, monthlyFee: 42500,
-        description: "Soluciones personalizadas"
+        description: "Soluciones personalizadas (A partir de)"
     }
   };
 
-  // --- Industry Presets based on Mexican WhatsApp Specialty Data ---
-  // avgLeadValue now represents estimated value BEFORE conversion
+  // --- Industry Presets: 10 Specialties + Fallback with Benchmarks Rounded Down ---
   const industryPresets = {
+    medicina_familiar: { // Moved to top
+        businessHourMessages: 37, afterHourMessages: 10, missedMessageRate: 10,
+        valuePerChatConversion: 650, conversionRateLift: 40,
+        salesMessagePercentage: 25, baseConversionRate: 70,
+        humanHourlyWage: 80, humanOverheadPercentage: 20, automationCoverage: 70
+    },
     clinica_dental: {
         businessHourMessages: 40, afterHourMessages: 15, missedMessageRate: 10,
-        avgLeadValue: 7813, // Estimated Lead Value (2500 / 0.3206)
-        conversionRateLift: 42.5, salesCallPercentage: 65, baseConversionRate: 22.5,
-        humanHourlyWage: 97.5, humanOverheadPercentage: 30, automationCoverage: 70
+        valuePerChatConversion: 2500, conversionRateLift: 42,
+        salesMessagePercentage: 65, baseConversionRate: 22,
+        humanHourlyWage: 97, humanOverheadPercentage: 30, automationCoverage: 70
     },
     quiropráctico: {
-        businessHourMessages: 30, afterHourMessages: 10, missedMessageRate: 6.5,
-        avgLeadValue: 3246, // Estimated Lead Value (1850 / 0.5718)
-        conversionRateLift: 52.5, salesCallPercentage: 45, baseConversionRate: 37.5,
-        humanHourlyWage: 102.5, humanOverheadPercentage: 27.5, automationCoverage: 70
+        businessHourMessages: 30, afterHourMessages: 10, missedMessageRate: 6,
+        valuePerChatConversion: 1850, conversionRateLift: 52,
+        salesMessagePercentage: 45, baseConversionRate: 37,
+        humanHourlyWage: 102, humanOverheadPercentage: 27, automationCoverage: 70
     },
     terapia_fisica: {
-        businessHourMessages: 57.5, afterHourMessages: 17.5, missedMessageRate: 12.5,
-        avgLeadValue: 2077, // Estimated Lead Value (1350 / 0.6506)
-        conversionRateLift: 37.5, salesCallPercentage: 55, baseConversionRate: 47.5,
-        humanHourlyWage: 90, humanOverheadPercentage: 24.5, automationCoverage: 70
+        businessHourMessages: 57, afterHourMessages: 17, missedMessageRate: 12,
+        valuePerChatConversion: 1350, conversionRateLift: 37,
+        salesMessagePercentage: 55, baseConversionRate: 47,
+        humanHourlyWage: 90, humanOverheadPercentage: 24, automationCoverage: 70
+    },
+    optometrista: {
+        businessHourMessages: 17, afterHourMessages: 4, missedMessageRate: 10,
+        valuePerChatConversion: 2250, conversionRateLift: 40,
+        salesMessagePercentage: 35, baseConversionRate: 27,
+        humanHourlyWage: 85, humanOverheadPercentage: 22, automationCoverage: 70
     },
      urgencias: {
-        businessHourMessages: 100, afterHourMessages: 37.5, missedMessageRate: 4,
-        avgLeadValue: 4750, // Estimated Lead Value (4750 / 1.00) - Conversion capped at 100%
-        conversionRateLift: 62.5, salesCallPercentage: 85, baseConversionRate: 75, // Base 75 * 1.625 > 100%
-        humanHourlyWage: 115, humanOverheadPercentage: 32.5, automationCoverage: 70
+        businessHourMessages: 100, afterHourMessages: 37, missedMessageRate: 4,
+        valuePerChatConversion: 4750, conversionRateLift: 62,
+        salesMessagePercentage: 85, baseConversionRate: 75,
+        humanHourlyWage: 115, humanOverheadPercentage: 32, automationCoverage: 70
     },
     salud_mental: {
-        businessHourMessages: 47.5, afterHourMessages: 30, missedMessageRate: 15,
-        avgLeadValue: 5625, // Estimated Lead Value (2250 / 0.3975)
-        conversionRateLift: 32.5, salesCallPercentage: 40, baseConversionRate: 30,
-        humanHourlyWage: 107.5, humanOverheadPercentage: 27.5, automationCoverage: 70
+        businessHourMessages: 47, afterHourMessages: 30, missedMessageRate: 15,
+        valuePerChatConversion: 2250, conversionRateLift: 32,
+        salesMessagePercentage: 40, baseConversionRate: 30,
+        humanHourlyWage: 107, humanOverheadPercentage: 27, automationCoverage: 70
     },
-    otro_salud: { // Fallback using Dental values
-        businessHourMessages: 40, afterHourMessages: 15, missedMessageRate: 10,
-        avgLeadValue: 7813,
-        conversionRateLift: 42.5, salesCallPercentage: 65, baseConversionRate: 22.5,
-        humanHourlyWage: 97.5, humanOverheadPercentage: 30, automationCoverage: 70
+    dermatologia: {
+        businessHourMessages: 25, afterHourMessages: 5, missedMessageRate: 10,
+        valuePerChatConversion: 2500, conversionRateLift: 40,
+        salesMessagePercentage: 55, baseConversionRate: 35,
+        humanHourlyWage: 125, humanOverheadPercentage: 30, automationCoverage: 70
+    },
+    spa_medico: {
+        businessHourMessages: 15, afterHourMessages: 6, missedMessageRate: 10,
+        valuePerChatConversion: 4500, conversionRateLift: 40,
+        salesMessagePercentage: 45, baseConversionRate: 17,
+        humanHourlyWage: 140, humanOverheadPercentage: 32, automationCoverage: 70
+    },
+    podologia: {
+        businessHourMessages: 12, afterHourMessages: 3, missedMessageRate: 10,
+        valuePerChatConversion: 1175, conversionRateLift: 40,
+        salesMessagePercentage: 40, baseConversionRate: 35,
+        humanHourlyWage: 97, humanOverheadPercentage: 24, automationCoverage: 70
+    },
+    otro_salud: { // UPDATED with specific values
+        businessHourMessages: 20, afterHourMessages: 5, missedMessageRate: 10,
+        valuePerChatConversion: 1000, conversionRateLift: 0,
+        salesMessagePercentage: 40, baseConversionRate: 25,
+        humanHourlyWage: 97, humanOverheadPercentage: 30, automationCoverage: 70
     }
   };
 
-  // --- Spanish names for the NEW dropdown ---
+  // --- Spanish names for the dropdown - Including 'Otro' ---
   const industryNamesEs = {
+    medicina_familiar: "Medicina Familiar", // Moved to top
     clinica_dental: "Clínica Dental",
     quiropráctico: "Quiropráctico",
     terapia_fisica: "Terapia Física",
+    optometrista: "Optometrista",
     urgencias: "Urgencias",
     salud_mental: "Salud Mental",
-    otro_salud: "Otro Sector Salud"
+    dermatologia: "Dermatología",
+    spa_medico: "Spa Médico",
+    podologia: "Podología",
+    otro_salud: "Otro Sector Salud" // Added back
   };
 
-  // --- Default Industry Selection ---
-  const defaultIndustry = "clinica_dental";
+  // --- Default Industry Selection Updated ---
+  const defaultIndustry = "medicina_familiar"; // Set default
   const defaultPreset = industryPresets[defaultIndustry];
 
-  // --- State Initialization using WhatsApp Defaults ---
+  // --- State Initialization using NEW Defaults (Medicina Familiar) ---
   const [businessHourMessages, setBusinessHourMessages] = useState(defaultPreset.businessHourMessages);
   const [afterHourMessages, setAfterHourMessages] = useState(defaultPreset.afterHourMessages);
   const [missedMessageRate, setMissedMessageRate] = useState(defaultPreset.missedMessageRate);
   const [automationPercentage, setAutomationPercentage] = useState(defaultPreset.automationCoverage);
-  const [salesMessagePercentage, setSalesMessagePercentage] = useState(defaultPreset.salesCallPercentage);
+  const [salesMessagePercentage, setSalesMessagePercentage] = useState(defaultPreset.salesMessagePercentage);
   const [daysOpen, setDaysOpen] = useState("sixdays");
-  const [avgLeadValue, setAvgLeadValue] = useState(defaultPreset.avgLeadValue); // Now represents Lead Value
-  // Calculate initial conversion rate and ROUND it
+  const [avgLeadValue, setAvgLeadValue] = useState(defaultPreset.valuePerChatConversion);
   const calculateConversionRate = (preset) => {
       const rate = preset.baseConversionRate * (1 + preset.conversionRateLift / 100);
-      // Cap conversion rate at 100% before rounding
       return Math.round(Math.min(rate, 100));
   };
   const initialConversionRate = calculateConversionRate(defaultPreset);
-  const [conversionRate, setConversionRate] = useState(initialConversionRate); // Final conversion rate %
+  const [conversionRate, setConversionRate] = useState(initialConversionRate);
   const [industry, setIndustry] = useState(defaultIndustry);
   const [humanHourlyWage, setHumanHourlyWage] = useState(defaultPreset.humanHourlyWage);
   const [humanHoursPerWeek, setHumanHoursPerWeek] = useState(40);
@@ -208,7 +240,7 @@ function App() {
   // Input validation state
   const [inputErrors, setInputErrors] = useState({
     businessHourMessages: false, afterHourMessages: false, missedMessageRate: false,
-    automationPercentage: false, salesMessagePercentage: false, avgLeadValue: false,
+    salesMessagePercentage: false, avgLeadValue: false,
     conversionRate: false, humanHourlyWage: false, humanHoursPerWeek: false,
     humanOverheadPercentage: false,
   });
@@ -221,7 +253,7 @@ function App() {
 
   // Results state
   const [results, setResults] = useState({
-    totalMessages: 0, missedMessages: 0, salesMissedMessages: 0,
+    totalMessages: 0, missedMessages: 0, salesMissedMessages: 0, convertedPatientsLost: 0,
     aiPlatformFee: 0, aiSetupFee: 0, aiSetupFeeMonthly: 0,
     aiTotalMonthlyCost: 0, aiTotalCostWithSetup: 0, humanCost: 0,
     potentialRevenue: 0, costSavings: 0, netBenefit: 0, roi: 0,
@@ -233,7 +265,9 @@ function App() {
 
   // --- Effects ---
   useEffect(() => {
-    const hasErrors = Object.values(inputErrors).some(error => error);
+    const errorsToCheck = { ...inputErrors };
+    delete errorsToCheck.automationPercentage;
+    const hasErrors = Object.values(errorsToCheck).some(error => error);
     setValidationError(hasErrors);
   }, [inputErrors]);
 
@@ -245,7 +279,7 @@ function App() {
     }
   }, [selectedTier]);
 
-  // --- Calculation Logic (Uses conversionRate now) ---
+  // --- Calculation Logic (Updated totalMessages calculation) ---
   useEffect(() => {
     try {
       // Ensure inputs are valid numbers
@@ -254,8 +288,8 @@ function App() {
       const numMissedRate = Number(missedMessageRate) || 0;
       const numAutomation = Number(automationPercentage) || 0;
       const numSalesPercent = Number(salesMessagePercentage) || 0;
-      const numAvgLeadVal = Number(avgLeadValue) || 0; // This is now LEAD value
-      const numConversionRate = Number(conversionRate) || 0; // This is the final conversion %
+      const numAvgValuePerConversion = Number(avgLeadValue) || 0;
+      const numConversionRate = Number(conversionRate) || 0;
       const numWage = Number(humanHourlyWage) || 0;
       const numHours = Number(humanHoursPerWeek) || 0;
       const numOverhead = Number(humanOverheadPercentage) || 0;
@@ -266,20 +300,31 @@ function App() {
       const monthlyWageCost = yearlyWageCost / 12;
       const calculatedHumanMonthlyCost = monthlyWageCost * (1 + numOverhead / 100);
 
-      // Calculate monthly message volume
+      // --- Calculate Total Messages Handled by AI (Using LATEST User's Formula Structure) ---
       const daysPerMonth = daysOpen === "weekdays" ? 22 : daysOpen === "sixdays" ? 26 : 30;
       const totalMonthlyBusinessMessages = numBusinessMessages * daysPerMonth;
       const totalMonthlyAfterHourMessages = numAfterHoursMessages * 30;
-      const totalMonthlyMessages = totalMonthlyBusinessMessages + totalMonthlyAfterHourMessages;
+      const totalReceivedMonthlyMessages = totalMonthlyBusinessMessages + totalMonthlyAfterHourMessages;
+      // Component related to missed rate (applied to total received for this formula)
+      const monthlyMissedComponent = totalReceivedMonthlyMessages * (numMissedRate / 100);
+      // Final calculation for total messages handled by AI per user formula structure: [Received + MissedComponent] * 1.3
+      // Factor 1.3 represents estimated increase due to conversation length/exchanges.
+      const totalMonthlyMessages = (totalReceivedMonthlyMessages + monthlyMissedComponent) * 1.3;
+      // --- End of New Total Messages Calculation ---
 
-      // Calculate missed messages
-      const monthlyMissedBusinessHourMessages = totalMonthlyBusinessMessages * (numMissedRate / 100);
-      const totalMissedMessages = monthlyMissedBusinessHourMessages + totalMonthlyAfterHourMessages;
 
-      // Calculate potential revenue from missed messages (USING CONVERSION RATE)
-      const salesMissedMessages = totalMissedMessages * (numSalesPercent / 100);
-      // Revenue = Missed Sales Leads * Value per Lead * Conversion Rate
-      const potentialRevenueFromMissedMessages = salesMissedMessages * numAvgLeadVal * (numConversionRate / 100);
+      // --- Calculate Missed Opportunities (Original Logic for Revenue/Lost Patients) ---
+      // Uses original missed logic: Rate on BH + All AH
+      const monthlyMissedBusinessHourMessages_orig = totalMonthlyBusinessMessages * (numMissedRate / 100);
+      const totalMissedMessages_orig = monthlyMissedBusinessHourMessages_orig + totalMonthlyAfterHourMessages;
+      const salesMissedMessages = totalMissedMessages_orig * (numSalesPercent / 100);
+      // --- End of Missed Opportunities Calculation ---
+
+      // Calculate potential revenue from missed messages (using Value per Conversion)
+      const potentialRevenueFromMissedMessages = salesMissedMessages * numAvgValuePerConversion;
+
+      // Calculate estimated number of actual patients lost using conversion rate
+      const convertedPatientsLost = salesMissedMessages * (numConversionRate / 100);
 
       // Calculate WhatsApp AI costs (Simplified)
       const aiPlatformFee = aiMonthlyFee;
@@ -311,9 +356,10 @@ function App() {
 
       // Update the results state
       setResults({
-        totalMessages: totalMonthlyMessages,
-        missedMessages: totalMissedMessages,
+        totalMessages: totalMonthlyMessages, // Uses the NEW calculation
+        missedMessages: totalMissedMessages_orig, // Uses original logic for this display metric
         salesMissedMessages: salesMissedMessages,
+        convertedPatientsLost: convertedPatientsLost,
         aiPlatformFee: aiPlatformFee,
         aiSetupFee: aiSetupFee,
         aiSetupFeeMonthly: aiSetupFeeMonthly,
@@ -338,7 +384,7 @@ function App() {
   }, [
     // Dependency array updated
     businessHourMessages, afterHourMessages, missedMessageRate, automationPercentage,
-    salesMessagePercentage, daysOpen, avgLeadValue, conversionRate, // conversionRate now affects calculation
+    salesMessagePercentage, daysOpen, avgLeadValue, conversionRate,
     aiSetupFee, aiMonthlyFee,
     humanHourlyWage, humanHoursPerWeek, humanOverheadPercentage
   ]);
@@ -347,25 +393,26 @@ function App() {
   const handleIndustryChange = (e) => {
     const selectedIndustry = e.target.value;
     setIndustry(selectedIndustry);
-    const preset = industryPresets[selectedIndustry] || industryPresets.otro_salud;
+    const preset = industryPresets[selectedIndustry] || industryPresets.medicina_familiar;
 
     setBusinessHourMessages(preset.businessHourMessages);
     setAfterHourMessages(preset.afterHourMessages);
     setMissedMessageRate(preset.missedMessageRate);
     setAutomationPercentage(preset.automationCoverage);
-    setSalesMessagePercentage(preset.salesCallPercentage);
-    setAvgLeadValue(preset.avgLeadValue); // Set estimated LEAD value
-    const newConversionRate = calculateConversionRate(preset); // Use helper to calculate/cap/round
+    setSalesMessagePercentage(preset.salesMessagePercentage);
+    setAvgLeadValue(preset.valuePerChatConversion);
+    const newConversionRate = calculateConversionRate(preset);
     setConversionRate(newConversionRate);
     setHumanHourlyWage(preset.humanHourlyWage);
     setHumanOverheadPercentage(preset.humanOverheadPercentage);
 
-    setInputErrors(prevErrors => ({
-      ...prevErrors,
-      businessHourMessages: false, afterHourMessages: false, missedMessageRate: false,
-      automationPercentage: false, salesMessagePercentage: false, avgLeadValue: false,
-      conversionRate: false, humanHourlyWage: false, humanOverheadPercentage: false,
-    }));
+    // Clear validation errors
+    setInputErrors({
+        businessHourMessages: false, afterHourMessages: false, missedMessageRate: false,
+        automationPercentage: false, salesMessagePercentage: false, avgLeadValue: false,
+        conversionRate: false, humanHourlyWage: false, humanHoursPerWeek: false,
+        humanOverheadPercentage: false,
+     });
   };
 
   const handleNumberInputChange = (setter, errorKey, value, min = 0, max = Infinity) => {
@@ -427,7 +474,8 @@ function App() {
                           onChange={handleIndustryChange}
                           className="w-full p-2 border border-gray-300 rounded focus:ring-gray-500 focus:border-gray-500 transition duration-150"
                         >
-                          {Object.keys(industryPresets).map(key => (
+                          {/* Dropdown now includes 'Otro' */}
+                          {Object.keys(industryNamesEs).map(key => (
                             <option key={key} value={key}>
                               {industryNamesEs[key] || key}
                             </option>
@@ -446,39 +494,31 @@ function App() {
                       <div>
                         <label htmlFor="businessHourMessages" className="block text-sm font-medium mb-1 text-gray-600">Prom. Mensajes Diarios (Horario Comercial)</label>
                         <input
-                           id="businessHourMessages" type="number" min="0" step="0.5" value={businessHourMessages}
+                           id="businessHourMessages" type="number" min="0" step="1" value={businessHourMessages}
                            onChange={(e) => handleNumberInputChange(setBusinessHourMessages, 'businessHourMessages', e.target.value)}
                            className={`w-full p-2 border rounded transition duration-150 ${
                             inputErrors.businessHourMessages ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-gray-500 focus:border-gray-500'
-                           }`} placeholder="ej., 40" />
+                           }`} placeholder="ej., 37" />
                         {inputErrors.businessHourMessages && (<p className="text-red-500 text-xs mt-1">Ingrese un número positivo.</p>)}
                       </div>
                       <div>
                         <label htmlFor="afterHourMessages" className="block text-sm font-medium mb-1 text-gray-600">Prom. Mensajes Diarios (Fuera de Horario)</label>
-                        <input id="afterHourMessages" type="number" min="0" step="0.5" value={afterHourMessages}
+                        <input id="afterHourMessages" type="number" min="0" step="1" value={afterHourMessages}
                           onChange={(e) => handleNumberInputChange(setAfterHourMessages, 'afterHourMessages', e.target.value)}
                           className={`w-full p-2 border rounded transition duration-150 ${inputErrors.afterHourMessages ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-gray-500 focus:border-gray-500'}`}
-                           placeholder="ej., 15" />
+                           placeholder="ej., 10" />
                         {inputErrors.afterHourMessages && (<p className="text-red-500 text-xs mt-1">Ingrese un número positivo.</p>)}
                       </div>
                       <div>
                         <label htmlFor="missedMessageRate" className="block text-sm font-medium mb-1 text-gray-600">Tasa de Mensajes Perdidos (%)</label>
-                        <input id="missedMessageRate" type="number" min="0" max="100" step="0.1" value={missedMessageRate}
+                        <input id="missedMessageRate" type="number" min="0" max="100" step="1" value={missedMessageRate}
                           onChange={(e) => handleNumberInputChange(setMissedMessageRate, 'missedMessageRate', e.target.value, 0, 100)}
                           className={`w-full p-2 border rounded transition duration-150 ${inputErrors.missedMessageRate ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-gray-500 focus:border-gray-500'}`}
                            placeholder="ej., 10" />
                          <p className="text-xs text-gray-500 mt-1">Porcentaje de mensajes en horario comercial no respondidos a tiempo.</p>
                         {inputErrors.missedMessageRate && (<p className="text-red-500 text-xs mt-1">Ingrese un valor entre 0 y 100.</p>)}
                       </div>
-                       <div>
-                        <label htmlFor="automationPercentage" className="block text-sm font-medium mb-1 text-gray-600">Porcentaje de Interacciones Automatizadas (%)</label>
-                        <input id="automationPercentage" type="number" min="0" max="100" step="1" value={automationPercentage}
-                          onChange={(e) => handleNumberInputChange(setAutomationPercentage, 'automationPercentage', e.target.value, 0, 100)}
-                          className={`w-full p-2 border rounded transition duration-150 ${inputErrors.automationPercentage ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-gray-500 focus:border-gray-500'}`}
-                           placeholder="ej., 70" />
-                         <p className="text-xs text-gray-500 mt-1">Qué % de mensajes totales puede resolver el bot sin humanos.</p>
-                        {inputErrors.automationPercentage && (<p className="text-red-500 text-xs mt-1">Ingrese un valor entre 0 y 100.</p>)}
-                      </div>
+                       {/* Automation Percentage Input REMOVED */}
                     </CardContent>
                   </Card>
 
@@ -527,21 +567,20 @@ function App() {
                     <CardContent className="space-y-4">
                       <div>
                         <label htmlFor="salesMessagePercentage" className="block text-sm font-medium mb-1 text-gray-600">% Mensajes de Nuevos Pacientes/Citas</label>
-                        <input id="salesMessagePercentage" type="number" min="0" max="100" step="0.5" value={salesMessagePercentage}
+                        <input id="salesMessagePercentage" type="number" min="0" max="100" step="1" value={salesMessagePercentage}
                           onChange={(e) => handleNumberInputChange(setSalesMessagePercentage, 'salesMessagePercentage', e.target.value, 0, 100)}
                           className={`w-full p-2 border rounded transition duration-150 ${inputErrors.salesMessagePercentage ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-gray-500 focus:border-gray-500'}`}
-                          placeholder="ej., 65" />
+                          placeholder="ej., 25" />
                          <p className="text-xs text-gray-500 mt-1">¿Qué porcentaje de mensajes son de posibles nuevos pacientes o citas?</p>
                         {inputErrors.salesMessagePercentage && (<p className="text-red-500 text-xs mt-1">Ingrese un valor entre 0 y 100.</p>)}
                       </div>
                       <div>
-                        {/* Updated Label and Description */}
-                        <label htmlFor="avgLeadValue" className="block text-sm font-medium mb-1 text-gray-600">Valor Promedio por **Lead** de Chat ($ MXN)</label>
-                        <input id="avgLeadValue" type="number" min="0" step="0.01" value={avgLeadValue}
+                        <label htmlFor="avgLeadValue" className="block text-sm font-medium mb-1 text-gray-600">Valor Promedio por **Conversión** de Chat ($ MXN)</label>
+                        <input id="avgLeadValue" type="number" min="0" step="1" value={avgLeadValue}
                           onChange={(e) => handleNumberInputChange(setAvgLeadValue, 'avgLeadValue', e.target.value)}
                           className={`w-full p-2 border rounded transition duration-150 ${inputErrors.avgLeadValue ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-gray-500 focus:border-gray-500'}`}
-                          placeholder="ej., 7813" /> {/* Updated Placeholder */}
-                        <p className="text-xs text-gray-500 mt-1">Valor estimado de un prospecto generado vía chat (antes de conversión).</p>
+                          placeholder="ej., 650" />
+                        <p className="text-xs text-gray-500 mt-1">Valor estimado generado por un paciente que **se convirtió** vía chat.</p>
                         {inputErrors.avgLeadValue && (<p className="text-red-500 text-xs mt-1">Ingrese un número positivo.</p>)}
                       </div>
                       <div>
@@ -549,7 +588,7 @@ function App() {
                         <input id="conversionRate" type="number" min="0" max="100" step="1" value={conversionRate}
                           onChange={(e) => handleNumberInputChange(setConversionRate, 'conversionRate', e.target.value, 0, 100)}
                           className={`w-full p-2 border rounded transition duration-150 ${inputErrors.conversionRate ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-gray-500 focus:border-gray-500'}`}
-                           placeholder="ej., 32" />
+                           placeholder="ej., 98" />
                         <p className="text-xs text-gray-500 mt-1">Tasa de conversión final estimada para leads de chat.</p>
                         {inputErrors.conversionRate && (<p className="text-red-500 text-xs mt-1">Ingrese un valor entero entre 0 y 100.</p>)}
                       </div>
@@ -559,10 +598,10 @@ function App() {
                          <p className="text-xs text-gray-500 mb-3">Costo del personal si NO se implementa la solución WhatsApp IA.</p>
                         <div>
                           <label htmlFor="humanHourlyWage" className="block text-sm font-medium mb-1 text-gray-600">Salario Promedio por Hora ($ MXN)</label>
-                          <input id="humanHourlyWage" type="number" min="0" step="0.01" value={humanHourlyWage}
+                          <input id="humanHourlyWage" type="number" min="0" step="1" value={humanHourlyWage}
                             onChange={(e) => handleNumberInputChange(setHumanHourlyWage, 'humanHourlyWage', e.target.value)}
                             className={`w-full p-2 border rounded transition duration-150 ${inputErrors.humanHourlyWage ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-gray-500 focus:border-gray-500'}`}
-                            placeholder="ej., 97.50" />
+                            placeholder="ej., 80" />
                           {inputErrors.humanHourlyWage && (<p className="text-red-500 text-xs mt-1">Ingrese un número positivo.</p>)}
                         </div>
                         <div className="mt-4">
@@ -575,10 +614,10 @@ function App() {
                         </div>
                         <div className="mt-4">
                           <label htmlFor="humanOverheadPercentage" className="block text-sm font-medium mb-1 text-gray-600"> Gastos Generales Estimados (%) </label>
-                          <input id="humanOverheadPercentage" type="number" min="0" max="200" step="0.1" value={humanOverheadPercentage}
+                          <input id="humanOverheadPercentage" type="number" min="0" max="200" step="1" value={humanOverheadPercentage}
                             onChange={(e) => handleNumberInputChange(setHumanOverheadPercentage, 'humanOverheadPercentage', e.target.value, 0, 200)}
                             className={`w-full p-2 border rounded transition duration-150 ${inputErrors.humanOverheadPercentage ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-gray-500 focus:border-gray-500'}`}
-                            placeholder="ej., 30.0" />
+                            placeholder="ej., 20" />
                           <p className="text-xs text-gray-500 mt-1">Incluye beneficios (IMSS, INFONAVIT), impuestos, etc.</p>
                           {inputErrors.humanOverheadPercentage && (<p className="text-red-500 text-xs mt-1">Ingrese un porcentaje válido (ej. 0-200).</p>)}
                         </div>
@@ -617,17 +656,23 @@ function App() {
                       <span className="text-sm text-gray-700">Total Mensajes Manejados por IA (Est.):</span>
                       <span className="font-medium text-gray-900">{safeLocaleString(results.totalMessages, { maximumFractionDigits: 0 }, '0')}</span>
                     </div>
-                    <p className="text-xs text-gray-500 -mt-2 mb-2 pl-1">(Horario Comercial + Fuera de Horario)</p>
+                    {/* Updated explanation for total messages calculation */}
+                    <p className="text-xs text-gray-500 -mt-2 mb-2 pl-1">(Recibidos + (Recibidos * Tasa Perdida)) * 1.3</p>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-700">Mensajes Perdidos Actualmente (Est.):</span>
+                      <span className="text-sm text-gray-700">Mensajes Perdidos Actualmente (Leads Est.):</span>
                       <span className="font-medium text-red-600">{safeLocaleString(results.missedMessages, { maximumFractionDigits: 1 }, '0.0')}</span>
                     </div>
                     <p className="text-xs text-gray-500 -mt-2 mb-2 pl-1">(Mensajes Hor. Com. x Tasa Perdida + Todos Fuera Hor.)</p>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-700">Oportunidades Perdidas (Nuevos Pacientes Est.):</span>
+                      <span className="text-sm text-gray-700">Oportunidades de Venta Perdidas (Leads Est.):</span>
                        <span className="font-medium text-red-700">{safeLocaleString(results.salesMissedMessages, { maximumFractionDigits: 1 }, '0.0')}</span>
                     </div>
                     <p className="text-xs text-gray-500 -mt-2 mb-2 pl-1">(Mensajes Perdidos × % Mensajes Nuevos Pacientes)</p>
+                    <div className="flex justify-between items-center border-t border-gray-200 pt-3 mt-3">
+                      <span className="text-sm font-semibold text-red-700">Pacientes Nuevos Perdidos (Est.):</span>
+                      <span className="font-semibold text-red-700">{safeLocaleString(results.convertedPatientsLost, { maximumFractionDigits: 1 }, '0.0')}</span>
+                    </div>
+                    <p className="text-xs text-gray-500 -mt-2 mb-2 pl-1">(Oportunidades Perdidas × Tasa Conversión Estimada)</p>
                      <div className="flex justify-between items-center border-t border-gray-200 pt-3 mt-3">
                       <span className="text-sm font-semibold text-blue-700">Eficiencia de Automatización (Est.):</span>
                       <span className="font-semibold text-blue-700">{safeLocaleString(results.automationPercentage / 100, { style: 'percent' })}</span>
@@ -698,8 +743,7 @@ function App() {
                       <span className="text-sm text-gray-700">Ingresos Adicionales Potenciales (WhatsApp):</span>
                       <span className="font-medium text-green-700"> + ${safeLocaleString(results.potentialRevenue, { style: 'decimal', minimumFractionDigits: 2 })} </span>
                     </div>
-                    {/* Updated description for potential revenue */}
-                    <p className="text-xs text-gray-500 -mt-2 mb-2 pl-1">(Oportunidades Perdidas * Valor Lead * Tasa Conversión)</p>
+                    <p className="text-xs text-gray-500 -mt-2 mb-2 pl-1">(Oportunidades Perdidas (Leads) * Valor por Conversión)</p>
                     <div className="flex justify-between items-center border-t border-gray-300 pt-2 mt-2">
                       <span className="text-sm font-semibold text-gray-800">Beneficio Mensual Total (WhatsApp IA):</span>
                       <span className={`font-semibold text-xl ${results.netBenefit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -796,7 +840,7 @@ function App() {
                          <li> La solución WhatsApp IA proyecta un<span className={`font-semibold ${results.netBenefit >= 0 ? 'text-green-600' : 'text-red-600'}`}> {results.netBenefit >= 0 ? ' beneficio ' : ' costo '} neto mensual de ${safeLocaleString(Math.abs(results.netBenefit), { style: 'decimal', minimumFractionDigits: 2 })} </span> (vs. status quo). </li>
                          {(results.paybackPeriod > 0 && isFinite(results.paybackPeriod)) && ( <li> La inversión inicial (configuración API de ${safeLocaleString(results.aiSetupFee, { style: 'decimal', minimumFractionDigits: 0 })}) se estima recuperar en <span className="font-semibold text-green-700"> {formatPaybackPeriod(results.paybackPeriod)}</span>.</li> )}
                           {(!isFinite(results.paybackPeriod) || results.paybackPeriod < 0) && results.netBenefit <= 0 && ( <li> Con los datos actuales, no se proyecta recuperar la inversión inicial a través de los beneficios netos. </li> )}
-                         {results.potentialRevenue > 0 && ( <li> Capturar mensajes perdidos podría generar <span className="font-semibold text-green-600"> ${safeLocaleString(results.potentialRevenue, { style: 'decimal', minimumFractionDigits: 2 })}</span> en ingresos mensuales adicionales. </li> )}
+                         {results.potentialRevenue > 0 && ( <li> Capturar mensajes perdidos podría generar <span className="font-semibold text-green-600"> ${safeLocaleString(results.potentialRevenue, { style: 'decimal', minimumFractionDigits: 2 })}</span> en ingresos mensuales adicionales, recuperando un estimado de <span className="font-semibold text-green-600">{safeLocaleString(results.convertedPatientsLost, {maximumFractionDigits: 1})}</span> pacientes/clientes al mes. </li> )}
                          {results.costSavings !== 0 && ( <li> Comparado al costo del personal actual, WhatsApp IA representa un<span className={`font-semibold ${results.costSavings >= 0 ? 'text-green-600' : 'text-red-600'}`}> {results.costSavings >= 0 ? ' ahorro ' : ' costo adicional '} mensual de ${safeLocaleString(Math.abs(results.costSavings), { style: 'decimal', minimumFractionDigits: 2 })} </span>. </li> )}
                          {isFinite(results.roi) && !isNaN(results.roi) && results.roi !== 0 && ( <li> Esto se traduce en un ROI mensual potencial de <span className={`font-semibold ${results.roi >= 0 ? 'text-green-600' : 'text-red-600'}`}> {safeLocaleString(results.roi / 100, { style: 'percent', maximumFractionDigits: 0 }, 'N/A')} </span>. </li> )}
                          <li> Comparando solo los ingresos adicionales anuales vs el costo total de WhatsApp IA del primer año resulta en una <span className={`font-semibold ${results.firstYearRevenueVsAiCost >= 0 ? 'text-green-600' : 'text-red-600'}`}>{results.firstYearRevenueVsAiCost >=0 ? 'ganancia' : 'pérdida'} neta de ${safeLocaleString(Math.abs(results.firstYearRevenueVsAiCost), {style: 'decimal', minimumFractionDigits: 2 })}</span> (sin incluir ahorros de personal).</li>
